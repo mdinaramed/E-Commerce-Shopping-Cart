@@ -1,6 +1,7 @@
 package interfaces;
+import strategy.OrderContext;
 import utilities.Money;
-import interfaces.PricedItem;
 
 public interface Pricing {
+    Money total(PricedItem item, OrderContext orderContext);
 }
