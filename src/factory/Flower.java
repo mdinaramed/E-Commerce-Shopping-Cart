@@ -24,6 +24,6 @@ public class Flower {
 
     @Override
     public String toString() {
-        return name + " " + color + " " + price + "Tenge";
+        return name + " " + color + " " + price + "KZT";
     }
 }

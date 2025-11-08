@@ -4,7 +4,7 @@ import utilities.Money;
 
 public class Lily implements FlowerFactory {
     @Override
-    public Flower createFlower(String color) {
+    public Flower collecteFlower(String color) {
         return new Flower("Lily", color, Money.of(4200));
     }
 }
