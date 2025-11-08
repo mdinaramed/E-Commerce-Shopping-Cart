@@ -25,8 +25,8 @@ public class BouquetBuilder{
       this.card = card;
       return this;
   }
-  public BouquetBuilder basePrice(Money basePrice){
-      this.basePrice = basePrice;
+  public BouquetBuilder basePrice(double amount){
+      this.basePrice = Money.of(amount);
       return this;
   }
     public Bouquet build(){
