@@ -13,13 +13,13 @@ public class PriceCatalog implements Observer {
                 int index = event.getData().indexOf('=');
                 int quantity = (index > 0) ? Integer.parseInt(event.getData().substring(index + 1)): 0;
                 lastQuantity.put(event.getKey(), quantity);
-                System.out.println("Stock" + event.getKey() + ":" + quantity + "pieces");
+                System.out.println("Stock" + event.getKey() + ":" + quantity + " pieces");
             }
             case PRICE -> {
                 int index = event.getData().indexOf('=');
                 int price = (index > 0) ? Integer.parseInt(event.getData().substring(index + 1)): 0;
                 lastPrice.put(event.getKey(), (long) price);
-                System.out.println("Price" + event.getKey() + ":" + price + "pieces");
+                System.out.println("Price" + event.getKey() + ":" + price + " pieces");
             }
         }
     }

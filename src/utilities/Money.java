@@ -22,4 +22,5 @@ public class Money {
     public String toString() {
         return String.format("%.0f KZT", amount);
     }
+    public static Money zero() { return new Money(0); }
 }

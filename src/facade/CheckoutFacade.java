@@ -1,18 +1,15 @@
 package facade;
-import factory.Rose;
 import filials.*;
 import builder.BouquetBuilder;
 import interfaces.*;
 import decorator.*;
 import interfaces.Payment;
 import strategy.*;
-import strategy.*;
 import adapter.*;
 import observer.Sklad;
 import strategy.DeliveryFee;
 import utilities.Money;
 import java.util.List;
-import factory.*;
 
 public class CheckoutFacade {
     private final BranchManager branches;
@@ -52,17 +49,18 @@ public class CheckoutFacade {
         System.out.println("Selected item: " + item.title());
         System.out.println("Added " + item.price());
 
-        Order order = new Order(requests.today, requests.birthday, "KZ", requests.deliveryType, requests.items);
+        Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items);
 
         Pricing pricing = new PriceCalculator(
                 List.of(
                         new BirthdayDiscount(),
                         new BulkDiscount(),
-                        new CashbackDiscount(),
-                        new WomenDayDiscount()),
+                        new WomenDayDiscount(),
+                        new CashbackDiscount()),
                 new DeliveryFee());
         Money total = pricing.total(item, order);
         System.out.println("Total price: " + total);
+        System.out.println("Cashback accrued: " + order.cashback());
 
         Payment payment = switch (requests.paymentMethod.toLowerCase()) {
             case "kaspi" -> new Kaspi();

@@ -15,11 +15,14 @@ public class PriceCalculator implements Pricing {
 
     @Override
     public Money total(PricedItem item, Order order) {
-        Money sum=item.price();
+        int qty = order.quantity();
+        Money sum = item.price().multiply(qty);
+
         for (DiscountStrategy discount : discounts) {
-            sum=discount.apply(sum, order);
+            sum = discount.apply(sum, order);
         }
-        sum=sum.add(deliveryFee.fee(sum, order));
+
+        sum = sum.add(deliveryFee.fee(sum, order));
         return sum;
     }
 }
