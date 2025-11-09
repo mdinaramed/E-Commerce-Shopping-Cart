@@ -1,14 +1,13 @@
 package strategy;
-import interfaces.Delivery;
 import utilities.Money;
 
-public class DeliveryFee implements Delivery {
+public class DeliveryFee implements interfaces.DeliveryFee {
     @Override
-    public Money fee(Money amount, OrderContext orderContext) {
-        if (orderContext == null || orderContext.DeliveryType == null)
+    public Money fee(Money amount, Order order) {
+        if (order == null || order.DeliveryType == null)
             return amount;
 
-        switch (orderContext.DeliveryType.toLowerCase()) {
+        switch (order.DeliveryType.toLowerCase()) {
             case "express":
                 return amount.add(new Money(2500));
             case "courier":

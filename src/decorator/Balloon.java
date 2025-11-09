@@ -8,7 +8,7 @@ public class Balloon extends AbstractBouquet{
     }
     @Override
     public String title(){
-        return item.title() +" + Balloon";
+        return item.title() + " + Balloon";
     }
     @Override
     public Money price() {

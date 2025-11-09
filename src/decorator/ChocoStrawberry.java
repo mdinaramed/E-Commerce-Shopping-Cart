@@ -8,7 +8,7 @@ public class ChocoStrawberry extends AbstractBouquet{
     }
     @Override
     public String title() {
-        return item.title() + "+ Choco Strawberry";
+        return item.title() + " + Choco Strawberry";
     }
     @Override
     public Money price() {

@@ -8,7 +8,7 @@ public class Cake extends AbstractBouquet{
     }
     @Override
     public String title(){
-        return item.title() +" + Cake";
+        return item.title() + " + Cake";
     }
     @Override
     public Money price() {

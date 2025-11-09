@@ -4,14 +4,13 @@ import utilities.Money;
 import java.time.MonthDay;
 
 public class BirthdayDiscount implements DiscountStrategy {
-    private boolean isBirthday(OrderContext orderContext) {
-        return orderContext != null && orderContext.date != null && orderContext.birthday != null
-                && MonthDay.from(orderContext.date).equals(orderContext.birthday);
+    private boolean isBirthday(Order order) {
+        return order != null && order.date != null && order.birthday != null && MonthDay.from(order.date).equals(order.birthday);
     }
 
     @Override
-    public Money apply(Money amount, OrderContext orderContext) {
-        if (isBirthday(orderContext))
+    public Money apply(Money amount, Order order) {
+        if (isBirthday(order))
             return amount.multiply(0.9);
         return amount;
     }

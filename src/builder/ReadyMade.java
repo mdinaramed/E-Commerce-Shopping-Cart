@@ -15,7 +15,7 @@ public class ReadyMade {
         }
         public static Bouquet redRoses51(){
             return new BouquetBuilder()
-                    .flower("Roses")
+                    .flower("Rose")
                     .color("Red")
                     .wrap("Black")
                     .card("Себепсіз, себеп-сіз")
@@ -24,7 +24,7 @@ public class ReadyMade {
         }
         public static Bouquet rosesMix101(){
             return new BouquetBuilder()
-                    .flower("Roses")
+                    .flower("Rose")
                     .color("Red/White")
                     .wrap("Luxury")
                     .card("Only FOR YOU")

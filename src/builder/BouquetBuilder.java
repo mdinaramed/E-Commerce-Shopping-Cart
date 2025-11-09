@@ -1,5 +1,7 @@
 package builder;
+import factory.Flower;
 import interfaces.Bouquet;
+import interfaces.FlowerFactory;
 import utilities.Money;
 
 public class BouquetBuilder{
@@ -8,6 +10,14 @@ public class BouquetBuilder{
     private String wrap;
     private String card;
     private Money basePrice;
+
+    public BouquetBuilder fromFactory(FlowerFactory factory, String color){
+        Flower f = factory.collectFlower(color);
+        this.flower = f.getName();
+        this.color = f.getColor();
+        this.basePrice = f.getPrice();
+        return this;
+    }
 
   public BouquetBuilder flower(String flower){
       this.flower = flower;

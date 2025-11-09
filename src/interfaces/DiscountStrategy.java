@@ -1,8 +1,7 @@
 package interfaces;
-
-import strategy.OrderContext;
+import strategy.Order;
 import utilities.Money;
 
 public interface DiscountStrategy {
-    Money apply(Money amount, OrderContext orderContext);
+    Money apply(Money amount, Order order);
 }

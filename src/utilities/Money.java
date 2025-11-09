@@ -13,10 +13,10 @@ public class Money {
         return amount;
     }
     public Money add(Money other) {
-        return new Money(amount + other.amount);
+        return new Money(this.amount + other.amount);
     }
-    public Money multiply(double amount) {
-        return new Money(amount * amount);
+    public Money multiply(double factor) {
+        return new Money(this.amount * factor);
     }
     @Override
     public String toString() {
