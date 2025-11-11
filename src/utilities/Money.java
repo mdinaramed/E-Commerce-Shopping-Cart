@@ -13,7 +13,7 @@ public class Money {
         return amount;
     }
     public Money add(Money other) {
-        return new Money(this.amount + other.amount);
+        return new Money(this.amount + (other == null ? 0.0 : other.amount));
     }
     public Money multiply(double factor) {
         return new Money(this.amount * factor);
@@ -21,6 +21,6 @@ public class Money {
     @Override
     public String toString() {
         return String.format("%.0f KZT", amount);
+
     }
-    public static Money zero() { return new Money(0); }
 }

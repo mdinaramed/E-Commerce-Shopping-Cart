@@ -7,7 +7,6 @@ public class CashbackDiscount implements DiscountStrategy {
     public Money apply(Money amount, Order order) {
         if (order == null)
             return amount;
-        order.addCashback(amount.multiply(0.95));
-        return amount;
+        return amount.multiply(0.95);
     }
 }

@@ -7,7 +7,7 @@ import interfaces.Payment;
 import strategy.*;
 import adapter.*;
 import observer.Sklad;
-import strategy.DeliveryFee;
+import strategy.Delivery;
 import utilities.Money;
 import java.util.List;
 
@@ -37,6 +37,7 @@ public class CheckoutFacade {
                 .fromFactory(flowerFactory, requests.color)
                 .wrap(requests.wrap)
                 .card(requests.card)
+                .basePrice(requests.basePrice)
                 .build();
         System.out.println("Bouquet: " + bouquet);
 
@@ -55,12 +56,11 @@ public class CheckoutFacade {
                 List.of(
                         new BirthdayDiscount(),
                         new BulkDiscount(),
-                        new WomenDayDiscount(),
-                        new CashbackDiscount()),
-                new DeliveryFee());
+                        new WomenDayDiscount()),
+                new Delivery());
         Money total = pricing.total(item, order);
         System.out.println("Total price: " + total);
-        System.out.println("Cashback accrued: " + order.cashback());
+
 
         Payment payment = switch (requests.paymentMethod.toLowerCase()) {
             case "kaspi" -> new Kaspi();
@@ -80,8 +80,8 @@ public class CheckoutFacade {
         }
         System.out.println("Payment successful");
 
-        Delivery delivery = switch (requests.deliveryType.toLowerCase()){
-            case "pickUp" -> new PickUp();
+        interfaces.Delivery delivery = switch (requests.deliveryType.toLowerCase()){
+            case "pickup" -> new PickUp();
             default -> new Courier();
         };
         delivery.deliver(requests.customer.name(), requests.address.street());

@@ -25,8 +25,8 @@ public class SecondMain {
         BranchType branch = BranchType.values()[branchChoice - 1];
 
         System.out.println("\nDo you want:");
-        System.out.println("1) Build your own bouquet 💐");
-        System.out.println("2) Choose from ready-made bouquets 🎁");
+        System.out.println("1) Collect bouquet ");
+        System.out.println("2) Choose from ready-made bouquets ");
         System.out.print("Your choice: ");
         int choice = Integer.parseInt(scanner.nextLine());
         String flowerType;
@@ -93,7 +93,7 @@ public class SecondMain {
             System.out.println("\n Selected flower: " + flower.getName() + " (" + flower.getColor() + ")");
             System.out.println(" Price: " + flower.getPrice());
         }
-        System.out.print("\nHow many bouquets would you like to order? ");
+        System.out.print("\nHow many bouquets would you like to register? ");
         int items = Integer.parseInt(scanner.nextLine());
 
         System.out.println("\nWould you like to add any extras?");
@@ -106,47 +106,53 @@ public class SecondMain {
         System.out.print("\nDelivery (pickup / courier / express): ");
         String delivery = scanner.nextLine().trim();
 
-        System.out.print("Payment (Kaspi / Halyk / Freedom / ApplePay): ");
+        System.out.print("Payment method (Kaspi / Halyk / Freedom / ApplePay): ");
         String payment = scanner.nextLine().trim();
 
-        System.out.print("\nYour name: ");
+        System.out.print("\nClient's name: ");
         String name = scanner.nextLine().trim();
 
-        System.out.print("Your phone number: ");
+        System.out.print("Client's phone number: ");
         String phone = scanner.nextLine().trim();
 
-        System.out.print("Your address: ");
-        String addressLine = scanner.nextLine().trim();
+        String addressLine;
+        if (delivery.equalsIgnoreCase("pickup")) {
+            addressLine = "Pickup at branch (" + branch.name().replace("_", " ") + ")";
+            System.out.println("We'll prepare your bouquet at " + branch.name().replace("_", " "));
+        } else {
+            System.out.print("Address for delivery: ");
+            addressLine = scanner.nextLine().trim();
+        }
 
-        System.out.print("\nEnter your birthday (YYYY-MM-DD) or press Enter to skip: ");
+        System.out.print("\nEnter client's birthday (YYYY-MM-DD) or press Enter to skip: ");
         String birthdayInput = scanner.nextLine().trim();
         LocalDate birthday = birthdayInput.isEmpty() ? null : LocalDate.parse(birthdayInput);
 
-        OrderRequests req = new OrderRequests();
-        req.branchType = branch;
-        req.customer = new Customer(name, phone);
-        req.address = new Address(addressLine);
+        OrderRequests rq = new OrderRequests();
+        rq.branchType = branch;
+        rq.customer = new Customer(name, phone);
+        rq.address = new Address(addressLine);
 
-        req.flower = flowerType;
-        req.color = color;
-        req.wrap = wrap;
-        req.card = card;
-        req.basePrice = basePrice;
+        rq.flower = flowerType;
+        rq.color = color;
+        rq.wrap = wrap;
+        rq.card = card;
+        rq.basePrice = basePrice;
 
-        req.addBalloon = addBalloon;
-        req.addCake = addCake;
-        req.addToy = addToy;
-        req.addChocoStrawberry = addChocoStrawberry;
-        req.addFruitBasket = addFruitBasket;
+        rq.addBalloon = addBalloon;
+        rq.addCake = addCake;
+        rq.addToy = addToy;
+        rq.addChocoStrawberry = addChocoStrawberry;
+        rq.addFruitBasket = addFruitBasket;
 
-        req.deliveryType = delivery;
-        req.paymentMethod = payment;
-        req.today = LocalDate.now();
-        req.birthday = birthday;
-        req.items = items;
+        rq.deliveryType = delivery;
+        rq.paymentMethod = payment;
+        rq.today = LocalDate.now();
+        rq.birthday = birthday;
+        rq.items = items;
 
-        System.out.println("\nYour order request is ready.Sending to thesystem...\n");
-        return req;
+        System.out.println("\nYour order request is ready.Sending to the system...\n");
+        return rq;
     }
 
     private static boolean ask(Scanner scanner, String option) {
