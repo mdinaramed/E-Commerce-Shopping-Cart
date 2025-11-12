@@ -5,9 +5,10 @@ import facade.OrderRequests;
 
 public class Main {
     public static void main(String[] args) {
-        OrderRequests orderRequests = SecondMain.startInteractive();
-        BranchManager branchManager = new BranchManager();
-        CheckoutFacade facade = new CheckoutFacade(branchManager);
+        BranchManager branches = new BranchManager();
+        OrderRequests orderRequests = SecondMain.startInteractive(branches);
+        if (orderRequests == null) return;
+        CheckoutFacade facade = new CheckoutFacade(branches);
         facade.placeOrder(orderRequests);
     }
 }

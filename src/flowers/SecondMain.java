@@ -1,5 +1,7 @@
 package flowers;
 import builder.ReadyMade;
+import filials.Branch;
+import filials.BranchManager;
 import filials.BranchType;
 import facade.Address;
 import facade.Customer;
@@ -7,12 +9,18 @@ import facade.OrderRequests;
 import factory.*;
 import interfaces.Bouquet;
 import interfaces.FlowerFactory;
+import observer.Sklad;
+import builder.BouquetBuilder;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SecondMain {
-    public static OrderRequests startInteractive() {
-        Scanner scanner = new Scanner(System.in);
+    public static OrderRequests startInteractive(BranchManager branches) {
+        Scanner sc = new Scanner(System.in);
 
         System.out.println("\n ✨Welcome to Ademi Flowers✨");
         System.out.println("Please choose branch:");
@@ -21,21 +29,137 @@ public class SecondMain {
             System.out.println(i++ + ". " + bt.name().replace("_", " "));
         }
         System.out.print("Choose branch: ");
-        int branchChoice = Integer.parseInt(scanner.nextLine());
-        BranchType branch = BranchType.values()[branchChoice - 1];
+        int branchChoice = readInt(sc, 1, BranchType.values().length);
+        BranchType branchType = BranchType.values()[branchChoice - 1];
+
+        Branch branch = branches.getBranch(branchType);
+        Sklad sklad = branch.getSklad();
 
         System.out.println("\nDo you want:");
-        System.out.println("1) Collect bouquet ");
-        System.out.println("2) Choose from ready-made bouquets ");
+        System.out.println("1) Collect bouquet 💐");
+        System.out.println("2) Choose from ready-made bouquets 🎁");
         System.out.print("Your choice: ");
-        int choice = Integer.parseInt(scanner.nextLine());
-        String flowerType;
-        String color;
+        int choice = readInt(sc, 1, 2);
+        String flowerLabel;
+        String colorLabel;
         String wrap;
         String card;
-        double basePrice;
+        double basePricePerBouquet;
+        int items;
+        boolean addBalloon, addCake, addToy, addChocoStrawberry, addFruitBasket;
+        String delivery, payment, name, phone, addressLine;
+        LocalDate birthday;
 
-        if (choice == 2) {
+
+        if (choice == 1) {
+            List<Component> components = new ArrayList<>();
+            System.out.println("\nFlower List: rose, tulips, peony, lily, orchid, hydrangea, chrysanthemum");
+
+            while (true) {
+                System.out.print("Enter flower type (or press Enter to finish): ");
+                String type = sc.nextLine().trim();
+                if (type.isEmpty()) break;
+
+                System.out.print("Flower color: ");
+                String col = sc.nextLine().trim();
+
+                System.out.print("How many stems of " + type + "? ");
+                int qtyPerBouquet = readPositiveInt(sc);
+
+                int have = sklad.getQuantity(type.toLowerCase());
+                if (have < qtyPerBouquet) {
+                    System.out.println("Only " + have + " " + type + " left in stock for now.");
+                    System.out.print("Take " + have + " instead? (y/n): ");
+                    if (yes(sc)) qtyPerBouquet = have;
+                    else {
+                        System.out.println("Skipped " + type + ".");
+                        continue;
+                    }
+                }
+
+                FlowerFactory ff = factoryOf(type);
+                factory.Flower f = ff.collectFlower(col);
+                components.add(new Component(f, qtyPerBouquet));
+
+                double part = f.getPrice().getAmount() * qtyPerBouquet;
+                System.out.println("✅ Added " + qtyPerBouquet + " × " + f.getName() + " (" + col + ") — " + (long)part + " KZT\n");
+            }
+
+            if (components.isEmpty()) {
+                System.out.println("No flowers selected. Cancelling.");
+                return null;
+            }
+
+            basePricePerBouquet = components.stream()
+                    .mapToDouble(c -> c.flower().getPrice().getAmount() * c.qty())
+                    .sum();
+
+            flowerLabel = components.stream()
+                    .map(c -> c.flower().getName() + " x" + c.qty())
+                    .collect(Collectors.joining(" + "));
+
+            Set<String> colors = components.stream().map(c -> c.flower().getColor()).collect(Collectors.toSet());
+            colorLabel = (colors.size() == 1) ? colors.iterator().next() : "Mixed";
+
+            System.out.print("Wrap (Classic / Craft / Silk / Premium): ");
+            wrap = sc.nextLine().trim();
+
+            System.out.print("Card (write a short note or No): ");
+            card = sc.nextLine().trim();
+
+            System.out.print("\nHow many bouquets would you like to order? ");
+            items = readPositiveInt(sc);
+
+            for (Component c : components) {
+                String t = c.flower().getName().toLowerCase();
+                int need = c.qty() * items;
+                int have = sklad.getQuantity(t);
+                if (have < need) {
+                    System.out.println("For " + t + " you need " + need + ", but only " + have + " in stock.");
+                    int maxBouquets = (c.qty() == 0) ? 0 : (have / c.qty());
+                    System.out.print("Make " + maxBouquets + " bouquets instead? (y/n): ");
+                    if (yes(sc)) {
+                        items = maxBouquets;
+                    } else {
+                        System.out.println("Order cancelled due to insufficient stock.");
+                        return null;
+                    }
+                }
+            }
+
+            System.out.println("\nBase price per bouquet: " + (long)basePricePerBouquet + " KZT");
+            System.out.println("Composition: " + flowerLabel + " | colors: " + colorLabel);
+
+            System.out.println("\nWould you like to add any extras?");
+            addBalloon = ask(sc, "Balloon");
+            addCake = ask(sc, "Cake");
+            addToy = ask(sc, "Toy");
+            addChocoStrawberry = ask(sc, "Choco Strawberries");
+            addFruitBasket = ask(sc, "Fruit Basket");
+
+            System.out.print("\nDelivery (pickup / courier / express): ");
+            delivery = sc.nextLine().trim();
+            if (delivery.equalsIgnoreCase("pickup")) {
+                addressLine = "Pickup at branch: " + branchType.name().replace("_", " ");
+                System.out.println("We'll prepare your bouquet at " + branchType.name().replace("_", " "));
+            } else {
+                System.out.print("Address for delivery: ");
+                addressLine = sc.nextLine().trim();
+            }
+
+            System.out.print("Payment method (Kaspi / Halyk / Freedom / ApplePay): ");
+            payment = sc.nextLine().trim();
+
+            System.out.print("\nYour name: ");
+            name = sc.nextLine().trim();
+            System.out.print("Your phone number: ");
+            phone = sc.nextLine().trim();
+
+            System.out.print("Enter your birthday (YYYY-MM-DD) or press Enter to skip: ");
+            String b = sc.nextLine().trim();
+            birthday = b.isEmpty() ? null : LocalDate.parse(b);
+
+        } else {
             System.out.println("\nAvailable Ready Bouquets:");
             System.out.println("1) 25 Red Roses - 25,000 KZT");
             System.out.println("2) 51 Red Roses - 50,000 KZT");
@@ -43,7 +167,7 @@ public class SecondMain {
             System.out.println("4) Spring Mix (Lily + Orchid + Chrysanthemum) - 26,000 KZT");
             System.out.println("5) Royal Mix (Hydrangea + Orchid) - 34,500 KZT");
             System.out.print("Choose: ");
-            int ready = Integer.parseInt(scanner.nextLine());
+            int ready = readInt(sc, 1, 5);
 
             Bouquet selected = switch (ready) {
                 case 1 -> ReadyMade.redRoses25();
@@ -54,90 +178,64 @@ public class SecondMain {
                 default -> ReadyMade.redRoses25();
             };
 
-            flowerType = selected.flower();
-            color = selected.color();
-            wrap = selected.wrap();
-            card = selected.card();
-            basePrice = selected.basePrice().getAmount();
-
             System.out.println("\nYou chose a ready-made bouquet:");
             System.out.println(selected);
 
-        } else {
-            System.out.println("\nFlower List: rose, tulips, peony, lily, orchid, hydrangea, chrysanthemum");
-            System.out.print("Flower type: ");
-            flowerType = scanner.nextLine().trim();
+            flowerLabel = selected.flower();
+            colorLabel = selected.color();
+            wrap = selected.wrap();
+            card = selected.card();
+            basePricePerBouquet = selected.basePrice().getAmount();
 
-            System.out.print("Flower color: ");
-            color = scanner.nextLine().trim();
+            System.out.print("\nHow many bouquets would you like to order? ");
+            items = readPositiveInt(sc);
 
-            System.out.print("Wrap (Classic / Craft / Silk / Premium): ");
-            wrap = scanner.nextLine().trim();
+            System.out.println("\nWould you like to add any extras?");
+            addBalloon = ask(sc, "Balloon");
+            addCake = ask(sc, "Cake");
+            addToy = ask(sc, "Toy");
+            addChocoStrawberry = ask(sc, "Choco Strawberries");
+            addFruitBasket = ask(sc, "Fruit Basket");
 
-            System.out.print("Card (write a short note or No): ");
-            card = scanner.nextLine().trim();
+            System.out.print("\nDelivery (pickup / courier / express): ");
+            delivery = sc.nextLine().trim();
+            if (delivery.equalsIgnoreCase("pickup")) {
+                addressLine = "Pickup at branch: " + branchType.name().replace("_", " ");
+                System.out.println("We'll prepare your bouquet at " + branchType.name().replace("_", " "));
+            } else {
+                System.out.print("Address for delivery: ");
+                addressLine = sc.nextLine().trim();
+            }
+            System.out.print("Payment method (Kaspi / Halyk / Freedom / ApplePay): ");
+            payment = sc.nextLine().trim();
 
-            FlowerFactory flowerFactory = switch (flowerType.toLowerCase()) {
-                case "rose" -> new Rose();
-                case "tulips" -> new Tulips();
-                case "peony" -> new Peony();
-                case "lily" -> new Lily();
-                case "orchid" -> new Orchid();
-                case "hydrangea" -> new Hydrangea();
-                case "chrysanthemum" -> new Chrysanthemum();
-                default -> throw new IllegalArgumentException("Unknown flower type: " + flowerType);
-            };
-            Flower flower = flowerFactory.collectFlower(color);
-            basePrice = flower.getPrice().getAmount();
+            System.out.print("\nYour name: ");
+            name = sc.nextLine().trim();
+            System.out.print("Your phone number: ");
+            phone = sc.nextLine().trim();
 
-            System.out.println("\n Selected flower: " + flower.getName() + " (" + flower.getColor() + ")");
-            System.out.println(" Price: " + flower.getPrice());
+            System.out.print("Enter your birthday (YYYY-MM-DD) or press Enter to skip: ");
+            String b = sc.nextLine().trim();
+            birthday = b.isEmpty() ? null : LocalDate.parse(b);
         }
-        System.out.print("\nHow many bouquets would you like to register? ");
-        int items = Integer.parseInt(scanner.nextLine());
-
-        System.out.println("\nWould you like to add any extras?");
-        boolean addBalloon = ask(scanner, "Balloon added");
-        boolean addCake = ask(scanner, "Cake added");
-        boolean addToy = ask(scanner, "Toy added");
-        boolean addChocoStrawberry = ask(scanner, "Choco Strawberries added");
-        boolean addFruitBasket = ask(scanner, "Fruit Basket added");
-
-        System.out.print("\nDelivery (pickup / courier / express): ");
-        String delivery = scanner.nextLine().trim();
-
-        System.out.print("Payment method (Kaspi / Halyk / Freedom / ApplePay): ");
-        String payment = scanner.nextLine().trim();
-
-        System.out.print("\nClient's name: ");
-        String name = scanner.nextLine().trim();
-
-        System.out.print("Client's phone number: ");
-        String phone = scanner.nextLine().trim();
-
-        String addressLine;
-        if (delivery.equalsIgnoreCase("pickup")) {
-            addressLine = "Pickup at branch (" + branch.name().replace("_", " ") + ")";
-            System.out.println("We'll prepare your bouquet at " + branch.name().replace("_", " "));
-        } else {
-            System.out.print("Address for delivery: ");
-            addressLine = scanner.nextLine().trim();
-        }
-
-        System.out.print("\nEnter client's birthday (YYYY-MM-DD) or press Enter to skip: ");
-        String birthdayInput = scanner.nextLine().trim();
-        LocalDate birthday = birthdayInput.isEmpty() ? null : LocalDate.parse(birthdayInput);
+        Bouquet bouquet = new BouquetBuilder()
+                .flower(flowerLabel)
+                .color(colorLabel)
+                .wrap(wrap)
+                .card(card)
+                .basePrice(basePricePerBouquet)
+                .build();
 
         OrderRequests rq = new OrderRequests();
-        rq.branchType = branch;
+        rq.branchType = branchType;
         rq.customer = new Customer(name, phone);
         rq.address = new Address(addressLine);
 
-        rq.flower = flowerType;
-        rq.color = color;
-        rq.wrap = wrap;
-        rq.card = card;
-        rq.basePrice = basePrice;
+        rq.flower = bouquet.flower();
+        rq.color = bouquet.color();
+        rq.wrap = bouquet.wrap();
+        rq.card = bouquet.card();
+        rq.basePrice = basePricePerBouquet;
 
         rq.addBalloon = addBalloon;
         rq.addCake = addCake;
@@ -147,17 +245,61 @@ public class SecondMain {
 
         rq.deliveryType = delivery;
         rq.paymentMethod = payment;
+
         rq.today = LocalDate.now();
         rq.birthday = birthday;
         rq.items = items;
 
-        System.out.println("\nYour order request is ready.Sending to the system...\n");
+        System.out.println("\nYour order request is ready. Sending to the system...\n");
         return rq;
     }
 
-    private static boolean ask(Scanner scanner, String option) {
-        System.out.print("Add " + option + "? (y/n): ");
-        String ans = scanner.nextLine().trim().toLowerCase();
-        return ans.startsWith("y");
+
+    private static boolean ask(Scanner sc, String label) {
+        System.out.print("Add " + label + "? (y/n): ");
+        return yes(sc);
+    }
+
+    private static boolean yes(Scanner sc) {
+        String ans = sc.nextLine().trim().toLowerCase();
+        return ans.startsWith("y") || ans.startsWith("д");
+    }
+
+    private static int readInt(Scanner sc, int min, int max) {
+        while (true) {
+            try {
+                int v = Integer.parseInt(sc.nextLine().trim());
+                if (v >= min && v <= max) return v;
+            } catch (Exception ignored) {}
+            System.out.print("Enter a number from " + min + " to " + max + ": ");
+        }
+    }
+
+    private static int readPositiveInt(Scanner sc) {
+        while (true) {
+            try {
+                int v = Integer.parseInt(sc.nextLine().trim());
+                if (v > 0) return v;
+            } catch (Exception ignored) {}
+            System.out.print("Enter a positive number: ");
+        }
+    }
+
+    private static FlowerFactory factoryOf(String type) {
+        switch (type.toLowerCase()) {
+            case "rose": return new Rose();
+            case "tulips": return new Tulips();
+            case "peony": return new Peony();
+            case "lily": return new Lily();
+            case "orchid": return new Orchid();
+            case "hydrangea": return new Hydrangea();
+            case "chrysanthemum": return new Chrysanthemum();
+            default:
+                throw new IllegalArgumentException("Unknown flower type: " + type);
+        }
+    }
+
+    private record Component(factory.Flower flower, int qty) {
+
     }
 }
