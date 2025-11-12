@@ -142,7 +142,6 @@ public class SecondMain {
             delivery = sc.nextLine().trim();
             if (delivery.equalsIgnoreCase("pickup")) {
                 addressLine = "Pickup at branch: " + branchType.name().replace("_", " ");
-                System.out.println("We'll prepare your bouquet at " + branchType.name().replace("_", " "));
             } else {
                 System.out.print("Address for delivery: ");
                 addressLine = sc.nextLine().trim();
@@ -202,7 +201,6 @@ public class SecondMain {
             delivery = sc.nextLine().trim();
             if (delivery.equalsIgnoreCase("pickup")) {
                 addressLine = "Pickup at branch: " + branchType.name().replace("_", " ");
-                System.out.println("We'll prepare your bouquet at " + branchType.name().replace("_", " "));
             } else {
                 System.out.print("Address for delivery: ");
                 addressLine = sc.nextLine().trim();

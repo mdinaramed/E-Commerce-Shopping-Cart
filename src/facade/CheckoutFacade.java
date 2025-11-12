@@ -2,7 +2,6 @@ package facade;
 import bonus.Bonus;
 import utilities.Money;
 import filials.*;
-import builder.BouquetBuilder;
 import interfaces.*;
 import decorator.*;
 import interfaces.Payment;
@@ -12,8 +11,8 @@ import observer.Sklad;
 import strategy.Delivery;
 import csv.*;
 import java.io.IOException;
-
-import java.time.LocalDate;
+import builder.OrderBuilder;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.time.LocalTime;
 
@@ -84,7 +83,13 @@ public class CheckoutFacade {
             System.out.println("Subtotal: " + requests.basePrice + " KZT");
             System.out.println("Total: " + item.price().add(utilities.Money.of(deliveryFee)));
 
-            Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items, requests.customerId);
+        Order order = new OrderBuilder()
+                .date(requests.today)
+                .birthday(requests.birthday)
+                .deliveryType(requests.deliveryType)
+                .items(requests.items)
+                .customerId((requests.customerId != null && !requests.customerId.isBlank()) ? requests.customerId : requests.customer.phone())
+                .build();
 
             Pricing pricing = new PriceCalculator(
                     List.of(
@@ -152,7 +157,6 @@ public class CheckoutFacade {
         } catch (IOException e) {
             System.err.println("CSV save failed: " + e.getMessage());
         }
-
             Order earningOrder = new Order(
                     order.date,
                     order.birthday,
@@ -177,11 +181,22 @@ public class CheckoutFacade {
                 case "pickup" -> LocalTime.now().plusMinutes(20);
                 default -> LocalTime.now().plusMinutes(45);
             };
-            System.out.println("Expected delivery time: ~" + expectedTime.truncatedTo(java.time.temporal.ChronoUnit.MINUTES));
+
+        String branchName = requests.branchType.name().replace("_", " ");
+        DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
+
+        if (requests.deliveryType.equalsIgnoreCase("pickup")) {
+            System.out.println("We'll prepare your bouquet at " + branchName + " ~" + expectedTime.format(fmt));
+        } else if (requests.deliveryType.equalsIgnoreCase("express")) {
+            System.out.println("Expected delivery time: ~" + expectedTime.format(fmt));
+        } else if (requests.deliveryType.equalsIgnoreCase("courier")) {
+            System.out.println("Expected delivery time: ~" + expectedTime.format(fmt));
+        } else {
+            System.out.println("Estimated delivery time: ~" + expectedTime.format(fmt));
+        }
         if (!requests.composite) {
             sklad.buy(requests.flower, Math.max(1, requests.items));
         }
-
             System.out.println("Order registered successfully");
             return OrderStatus.DELIVERED;
         }
