@@ -152,6 +152,8 @@ public class SecondMain {
         rq.items = items;
 
         System.out.println("\nYour order request is ready.Sending to the system...\n");
+
+
         return rq;
     }
 

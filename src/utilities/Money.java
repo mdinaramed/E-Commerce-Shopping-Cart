@@ -21,6 +21,5 @@ public class Money {
     @Override
     public String toString() {
         return String.format("%.0f KZT", amount);
-
     }
 }
