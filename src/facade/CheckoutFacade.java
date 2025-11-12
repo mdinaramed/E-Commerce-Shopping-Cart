@@ -89,8 +89,8 @@ public class CheckoutFacade {
                 order.items,
                 order.customerId
         );
-        Money earned = pricing.total(item, earningOrder);
 
+        Money earned = pricing.total(item, earningOrder);
         Bonus bonus =  new Bonus();
         bonus.apply(earned, order);
         System.out.println("Bonus balance: " + Bonus.getBalance(String.valueOf(order.customerId)));
