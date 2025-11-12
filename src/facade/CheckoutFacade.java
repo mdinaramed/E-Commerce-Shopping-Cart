@@ -10,7 +10,10 @@ import strategy.*;
 import adapter.*;
 import observer.Sklad;
 import strategy.Delivery;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.time.LocalTime;
 
 public class CheckoutFacade {
     private final BranchManager branches;
@@ -42,17 +45,28 @@ public class CheckoutFacade {
                 .build();
         System.out.println("Bouquet: " + bouquet);
 
+
         PricedItem item = new BasicBouquet(bouquet);
         if (requests.addBalloon) item = new Balloon(item);
         if (requests.addCake) item = new Cake(item);
         if (requests.addChocoStrawberry) item = new ChocoStrawberry(item);
         if (requests.addFruitBasket) item = new FruitBasket(item);
         if (requests.addToy) item = new Toy(item);
+
         System.out.println("\nOrder details:");
         System.out.println(item.breakdown());
+        double deliveryFee = switch (requests.deliveryType.toLowerCase()){
+            case "express" -> 2500;
+            case "courier" -> 1500;
+            default -> 0;
+        };
+        if (deliveryFee > 0) {
+            System.out.println((" + Delivery (" + requests.deliveryType + ") +" + deliveryFee + " KZT"));
+        }
+
         System.out.println("_________________________________");
         System.out.println("Subtotal: " + requests.basePrice + " KZT");
-        System.out.println("Total: " + item.price());
+        System.out.println("Total: " + item.price().add(utilities.Money.of(deliveryFee)));
 
         Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items, requests.customerId);
 
@@ -82,6 +96,7 @@ public class CheckoutFacade {
             return OrderStatus.CREATED;
         }
         System.out.println("Payment successful");
+
         Order earningOrder = new Order (
                 order.date,
                 order.birthday,
@@ -101,10 +116,16 @@ public class CheckoutFacade {
         };
         delivery.deliver(requests.customer.name(), requests.address.street());
 
+        LocalTime expectedTime = switch (requests.deliveryType.toLowerCase()){
+            case "express" -> LocalTime.now().plusMinutes(30);
+            case "courier" -> LocalTime.now().plusMinutes(80);
+            case "pickup" -> LocalTime.now().plusMinutes(20);
+            default -> LocalTime.now().plusMinutes(45);
+        };
+        System.out.println("Expected delivery time: ~" + expectedTime.truncatedTo(java.time.temporal.ChronoUnit.MINUTES));
         sklad.buy(requests.flower, Math.max(1, requests.items));
 
         System.out.println("Order registered successfully");
         return OrderStatus.DELIVERED;
-
     }
 }

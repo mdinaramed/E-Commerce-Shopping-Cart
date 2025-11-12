@@ -254,7 +254,6 @@ public class SecondMain {
         return rq;
     }
 
-
     private static boolean ask(Scanner sc, String label) {
         System.out.print("Add " + label + "? (y/n): ");
         return yes(sc);
@@ -299,7 +298,5 @@ public class SecondMain {
         }
     }
 
-    private record Component(factory.Flower flower, int qty) {
-
-    }
+    private record Component(factory.Flower flower, int qty) {}
 }
