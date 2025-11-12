@@ -3,7 +3,6 @@ import interfaces.Bouquet;
 
 public class ReadyMade {
     private ReadyMade(){}
-
         public static Bouquet redRoses25(){
             return new BouquetBuilder()
                     .flower("Rose")
