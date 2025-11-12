@@ -47,8 +47,11 @@ public class CheckoutFacade {
         if (requests.addChocoStrawberry) item = new ChocoStrawberry(item);
         if (requests.addFruitBasket) item = new FruitBasket(item);
         if (requests.addToy) item = new Toy(item);
-        System.out.println("Selected item: " + item.title());
-        System.out.println("Added " + item.price());
+        System.out.println("\nOrder details:");
+        System.out.println(item.breakdown());
+        System.out.println("_________________________________");
+        System.out.println("Subtotal: " + requests.basePrice + " KZT");
+        System.out.println("Total: " + item.price());
 
         Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items);
 

@@ -14,4 +14,8 @@ public class Balloon extends AbstractBouquet{
     public Money price() {
         return item.price().add(Money.of(800));
     }
+    @Override
+    public String breakdown(){
+        return item.breakdown() + "\n + Balloon +800 KZT";
+    }
 }

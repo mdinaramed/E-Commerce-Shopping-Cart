@@ -97,11 +97,11 @@ public class SecondMain {
         int items = Integer.parseInt(scanner.nextLine());
 
         System.out.println("\nWould you like to add any extras?");
-        boolean addBalloon = ask(scanner, "Balloon");
-        boolean addCake = ask(scanner, "Cake");
-        boolean addToy = ask(scanner, "Toy");
-        boolean addChocoStrawberry = ask(scanner, "Choco Strawberries");
-        boolean addFruitBasket = ask(scanner, "Fruit Basket");
+        boolean addBalloon = ask(scanner, "Balloon added");
+        boolean addCake = ask(scanner, "Cake added");
+        boolean addToy = ask(scanner, "Toy added");
+        boolean addChocoStrawberry = ask(scanner, "Choco Strawberries added");
+        boolean addFruitBasket = ask(scanner, "Fruit Basket added");
 
         System.out.print("\nDelivery (pickup / courier / express): ");
         String delivery = scanner.nextLine().trim();
