@@ -1,0 +1,3 @@
+order_id,datetime,branch,customer_name,phone,items_json,subtotal,delivery,total,bonus_earned,discounts,payment,delivery_type434c87b1-307f-4660-9861-0740b0d53997,2025-11-12T22:14:50.587546,MEGA_SILKWAY,di,77078976543,Rose x7 + Lily x8,1,43200.0,2160,kaspi,pickup
+
+6dedd9ae-2e3b-4fe5-b631-69b31e8f6bc6,2025-11-12T22:59:18.884692,MEGA_SILKWAY,di,77078657654,Rose x7 + Lily x8,1,44000.0,2200,kaspi,pickup

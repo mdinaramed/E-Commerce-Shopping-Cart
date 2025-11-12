@@ -25,5 +25,6 @@ public class Branch {
     @Override
     public String toString() {
         return "Branch:" + type.name();
+
     }
 }

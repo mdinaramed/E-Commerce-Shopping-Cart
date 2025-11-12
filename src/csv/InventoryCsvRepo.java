@@ -1,36 +1,77 @@
 package csv;
 
-import java.io.IOException;
-import java.nio.file.Path;
+import filials.BranchType;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class InventoryCsvRepo {
-    private static final String HEADER = "flower,qty";
 
-    private Path file(String branch) {
-        return Path.of("data", "inventory_" + branch + ".csv");
+    public int previewQty(BranchType branch, String flower) {
+        Map<String, Integer> map = readQtyMap(PathsMap.inventory(branch));
+        return map.getOrDefault(norm(flower), 0);
+    }
+    public int tryReserve(BranchType branch, String flower, int items) throws IOException {
+        String path = PathsMap.inventory(branch);
+        Map<String, Integer> map = readQtyMap(path);
+        String key = norm(flower);
+
+        Integer available = map.get(key);
+        if (available == null) {
+            return 0;
+        }
+
+        int reserved = Math.min(available, Math.max(items, 0));
+        map.put(key, available - reserved);
+        writeQtyMap(path, map);
+        return reserved;
     }
 
-    public Map<String, Integer> load(String branch) throws IOException {
-        Map<String, Integer> map = new HashMap<>();
-        for (String[] r : Csv.read(file(branch))) {
-            map.put(r[0].toLowerCase(), Integer.parseInt(r[1]));
-        }
+    private static String norm(String s) {
+        return s == null ? "" : s.trim().toLowerCase();
+    }
+    private Map<String, Integer> readQtyMap(String path) {
+        Map<String, Integer> map = new LinkedHashMap<>();
+        File f = new File(path);
+        if (!f.exists()) return map;
+
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(new FileInputStream(f), StandardCharsets.UTF_8))) {
+
+            String line;
+            boolean header = true;
+            while ((line = br.readLine()) != null) {
+                if (header) { header = false; continue; }
+                String[] parts = line.split(",", -1);
+                if (parts.length < 2) continue;
+
+                String name = norm(parts[0]);
+                int qty = safeInt(parts[1]);
+                if (!name.isEmpty()) {
+                    map.put(name, Math.max(qty, 0));
+                }
+            }
+        } catch (IOException ignored) {}
         return map;
     }
+    private void writeQtyMap(String path, Map<String, Integer> map) throws IOException {
+        File f = new File(path);
+        File dir = f.getParentFile();
+        if (dir != null && !dir.exists()) dir.mkdirs();
 
-    public void saveAll(String branch, Map<String, Integer> map) throws IOException {
-        List<String[]> rows = new ArrayList<>();
-        map.forEach((k, v) -> rows.add(new String[]{k.toLowerCase(), String.valueOf(v)}));
-        Csv.writeAll(file(branch), HEADER, rows);
+        try (BufferedWriter bw = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(f, false), StandardCharsets.UTF_8))) {
+            bw.write("flower,qty\n");
+            for (Map.Entry<String, Integer> e : map.entrySet()) {
+                String name = e.getKey();
+                if (name == null || name.isEmpty()) continue;
+                int qty = Math.max(e.getValue() == null ? 0 : e.getValue(), 0);
+                bw.write(name + "," + qty + "\n");
+            }
+        }
     }
-
-    public synchronized int tryReserve(String branch, String flower, int want) throws IOException {
-        Map<String, Integer> inv = load(branch);
-        int have = inv.getOrDefault(flower.toLowerCase(), 0);
-        int take = Math.max(0, Math.min(have, want));
-        inv.put(flower.toLowerCase(), have - take);
-        saveAll(branch, inv);
-        return take;
+    private int safeInt(String s) {
+        try { return Integer.parseInt(s.trim()); }
+        catch (Exception e) { return 0; }
     }
 }

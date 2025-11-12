@@ -12,7 +12,7 @@ public class OrdersCsvRepo {
 
     public synchronized void append(String branch, String customerName, String phone,
                                     String flower, int qty, double total,
-                                    int pointsEarned, String payment, String deliveryType)
+                                    int bonusEarned, String payment, String deliveryType)
             throws IOException {
 
         Csv.append(path, HEADER, new String[]{
@@ -24,7 +24,7 @@ public class OrdersCsvRepo {
                 flower,
                 String.valueOf(qty),
                 String.valueOf(total),
-                String.valueOf(pointsEarned),
+                String.valueOf(bonusEarned),
                 payment,
                 deliveryType
         });

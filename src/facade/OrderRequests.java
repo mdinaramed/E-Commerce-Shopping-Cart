@@ -20,4 +20,6 @@ public class OrderRequests {
     public Customer customer;
     public Address address;
     public String customerId;
+    public boolean composite;
+    public java.util.Map<String, Integer> components;
 }

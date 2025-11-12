@@ -10,6 +10,5 @@ public class Main {
         if (orderRequests == null) return;
         CheckoutFacade facade = new CheckoutFacade(branches);
         facade.placeOrder(orderRequests);
-
     }
 }
