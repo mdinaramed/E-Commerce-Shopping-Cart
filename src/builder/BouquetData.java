@@ -41,6 +41,7 @@ public class BouquetData implements Bouquet {
     public Money basePrice() {
         return basePrice;
     }
+
     @Override
     public String toString() {
         return flower + " " + color + ", wrap: " + wrap + ", card: " + card + ", price: " + basePrice;

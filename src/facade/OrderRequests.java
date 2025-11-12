@@ -19,4 +19,5 @@ public class OrderRequests {
     public BranchType branchType;
     public Customer customer;
     public Address address;
+    public String customerId;
 }

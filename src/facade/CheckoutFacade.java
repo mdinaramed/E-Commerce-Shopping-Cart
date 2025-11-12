@@ -1,4 +1,6 @@
 package facade;
+import bonus.Bonus;
+import utilities.Money;
 import filials.*;
 import builder.BouquetBuilder;
 import interfaces.*;
@@ -8,7 +10,6 @@ import strategy.*;
 import adapter.*;
 import observer.Sklad;
 import strategy.Delivery;
-import utilities.Money;
 import java.util.List;
 
 public class CheckoutFacade {
@@ -53,7 +54,7 @@ public class CheckoutFacade {
         System.out.println("Subtotal: " + requests.basePrice + " KZT");
         System.out.println("Total: " + item.price());
 
-        Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items);
+        Order order = new Order(requests.today, requests.birthday, requests.deliveryType, requests.items, requests.customerId);
 
         Pricing pricing = new PriceCalculator(
                 List.of(
@@ -63,7 +64,6 @@ public class CheckoutFacade {
                 new Delivery());
         Money total = pricing.total(item, order);
         System.out.println("Total price: " + total);
-
 
         Payment payment = switch (requests.paymentMethod.toLowerCase()) {
             case "kaspi" -> new Kaspi();
@@ -82,6 +82,18 @@ public class CheckoutFacade {
             return OrderStatus.CREATED;
         }
         System.out.println("Payment successful");
+        Order earningOrder = new Order (
+                order.date,
+                order.birthday,
+                "pickup",
+                order.items,
+                order.customerId
+        );
+        Money earned = pricing.total(item, earningOrder);
+
+        Bonus bonus =  new Bonus();
+        bonus.apply(earned, order);
+        System.out.println("Bonus balance: " + Bonus.getBalance(String.valueOf(order.customerId)));
 
         interfaces.Delivery delivery = switch (requests.deliveryType.toLowerCase()){
             case "pickup" -> new PickUp();
