@@ -14,4 +14,8 @@ public class Toy extends AbstractBouquet{
     public Money price() {
         return item.price().add(Money.of(6000));
     }
+    @Override
+    public String breakdown(){
+        return item.breakdown() + "\n + Toy +6000 KZT";
+    }
 }

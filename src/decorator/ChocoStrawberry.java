@@ -14,4 +14,8 @@ public class ChocoStrawberry extends AbstractBouquet{
     public Money price() {
         return item.price().add(Money.of(9000));
     }
+    @Override
+    public String breakdown(){
+        return item.breakdown() + "\n + Choco Strawberry +9000 KZT";
+    }
 }
