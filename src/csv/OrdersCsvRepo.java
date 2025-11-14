@@ -12,9 +12,7 @@ public class OrdersCsvRepo {
 
     public synchronized void append(String branch, String customerName, String phone,
                                     String flower, int qty, double total,
-                                    int bonusEarned, String payment, String deliveryType)
-            throws IOException {
-
+                                    int bonusEarned, String payment, String deliveryType) throws IOException {
         Csv.append(path, HEADER, new String[]{
                 UUID.randomUUID().toString(),
                 Csv.now(),

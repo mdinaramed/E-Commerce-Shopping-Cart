@@ -6,7 +6,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class InventoryCsvRepo {
-
     public int previewQty(BranchType branch, String flower) {
         Map<String, Integer> map = readQtyMap(PathsMap.inventory(branch));
         return map.getOrDefault(norm(flower), 0);

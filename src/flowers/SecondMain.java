@@ -73,6 +73,7 @@ public class SecondMain {
                         continue;
                     }
                 }
+
                 FlowerFactory ff = factoryOf(type);
                 factory.Flower f = ff.collectFlower(col);
                 components.add(new Component(f, qtyPerBouquet));
@@ -86,9 +87,9 @@ public class SecondMain {
                 System.out.println("No flowers selected. Cancelling.");
                 return null;
             }
+
             basePricePerBouquet = components.stream()
-                    .mapToDouble(c -> c.flower().getPrice().getAmount() * c.qty())
-                    .sum();
+                    .mapToDouble(c -> c.flower().getPrice().getAmount() * c.qty()).sum();
 
             flowerLabel = components.stream()
                     .map(c -> c.flower().getName() + " x" + c.qty())
@@ -116,7 +117,8 @@ public class SecondMain {
                     System.out.print("Make " + maxBouquets + " bouquets instead? (y/n): ");
                     if (yes(sc)) {
                         items = maxBouquets;
-                    } else {
+                    }
+                    else {
                         System.out.println("Order cancelled due to insufficient stock.");
                         return null;
                     }

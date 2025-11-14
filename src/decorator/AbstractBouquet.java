@@ -13,7 +13,6 @@ public abstract class AbstractBouquet implements PricedItem {
     public String title() {
         return item.title();
     }
-
     @Override
     public Money price() {
         return item.price();

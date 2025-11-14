@@ -12,6 +12,8 @@ import strategy.Delivery;
 import csv.*;
 import java.io.IOException;
 import builder.OrderBuilder;
+
+import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.time.LocalTime;
@@ -22,6 +24,7 @@ public class CheckoutFacade {
     public CheckoutFacade(BranchManager branches) {
         this.branches = branches;
     }
+
     public OrderStatus placeOrder(OrderRequests requests) {
         Branch branch = branches.getBranch(requests.branchType);
         Sklad sklad = branch.getSklad();
@@ -58,30 +61,29 @@ public class CheckoutFacade {
                     .basePrice(requests.basePrice)
                     .build();
         }
-            System.out.println("Bouquet: " + bouquet);
 
+        System.out.println("Bouquet: " + bouquet);
 
-            PricedItem item = new BasicBouquet(bouquet);
-            if (requests.addBalloon) item = new Balloon(item);
-            if (requests.addCake) item = new Cake(item);
-            if (requests.addChocoStrawberry) item = new ChocoStrawberry(item);
-            if (requests.addFruitBasket) item = new FruitBasket(item);
-            if (requests.addToy) item = new Toy(item);
+        PricedItem item = new BasicBouquet(bouquet);
+        if (requests.addBalloon) item = new Balloon(item);
+        if (requests.addCake) item = new Cake(item);
+        if (requests.addChocoStrawberry) item = new ChocoStrawberry(item);
+        if (requests.addFruitBasket) item = new FruitBasket(item);
+        if (requests.addToy) item = new Toy(item);
 
-            System.out.println("\nOrder details:");
-            System.out.println(item.breakdown());
-            double deliveryFee = switch (requests.deliveryType.toLowerCase()) {
-                case "express" -> 2500;
-                case "courier" -> 1500;
-                default -> 0;
-            };
-            if (deliveryFee > 0) {
-                System.out.println((" + Delivery (" + requests.deliveryType + ") +" + deliveryFee + " KZT"));
-            }
+        System.out.println("\nOrder details:");
+        System.out.println(item.breakdown());
+        double deliveryFee = switch (requests.deliveryType.toLowerCase()) {
+            case "express" -> 2500;
+            case "courier" -> 1500;
+            default -> 0;
+        };
+        if (deliveryFee > 0) {
+            System.out.println((" + Delivery (" + requests.deliveryType + ") +" + deliveryFee + " KZT"));
+        }
 
-            System.out.println("_________________________________");
-            System.out.println("Subtotal: " + requests.basePrice + " KZT");
-            System.out.println("Total: " + item.price().add(utilities.Money.of(deliveryFee)));
+        System.out.println("_________________________________");
+        System.out.println("Subtotal: " + requests.basePrice + " KZT");
 
         Order order = new OrderBuilder()
                 .date(requests.today)
@@ -91,32 +93,43 @@ public class CheckoutFacade {
                 .customerId((requests.customerId != null && !requests.customerId.isBlank()) ? requests.customerId : requests.customer.phone())
                 .build();
 
-            Pricing pricing = new PriceCalculator(
-                    List.of(
-                            new BirthdayDiscount(),
-                            new BulkDiscount(),
-                            new WomenDayDiscount()),
-                    new Delivery());
-            Money total = pricing.total(item, order);
-            System.out.println("Total price: " + total);
+        Pricing pricing = new PriceCalculator(
+                List.of(
+                        new BirthdayDiscount(),
+                        new BulkDiscount(),
+                        new WomenDayDiscount()),
+                new Delivery());
+        Money total = pricing.total(item, order);
 
-            Payment payment = switch (requests.paymentMethod.toLowerCase()) {
-                case "kaspi" -> new Kaspi();
-                case "halyk" -> new Halyk();
-                case "freedom" -> new Freedom();
-                case "applepay" -> new ApplePay();
-                default -> {
-                    System.out.println("Invalid payment method " + requests.paymentMethod + "Use kaspi by default");
-                    yield new Kaspi();
-                }
-            };
+        boolean isBirthday = false;
 
-            boolean paid = payment.pay(requests.customer.name(), total);
-            if (!paid) {
-                System.out.println("Payment failed");
-                return OrderStatus.CREATED;
+        if (order.date != null && order.birthday != null) {
+            isBirthday = MonthDay.from(order.date).equals(MonthDay.from(order.birthday));
+        }
+
+        if (isBirthday) {
+            System.out.println("Total: " + total + " KZT (congratulating you with HB and we have discount -10% for you without adding delivery price)");
+        } else {
+            System.out.println("Total: " + total);
+        }
+
+        Payment payment = switch (requests.paymentMethod.toLowerCase()) {
+            case "kaspi" -> new Kaspi();
+            case "halyk" -> new Halyk();
+            case "freedom" -> new Freedom();
+            case "applepay" -> new ApplePay();
+            default -> {
+                System.out.println("Invalid payment method " + requests.paymentMethod + "Use kaspi by default");
+                yield new Kaspi();
             }
-            System.out.println("Payment successful");
+        };
+
+        boolean paid = payment.pay(requests.customer.name(), total);
+        if (!paid) {
+            System.out.println("Payment failed");
+            return OrderStatus.CREATED;
+        }
+        System.out.println("Payment successful");
 
         try {
             InventoryCsvRepo inventoryRepo = new InventoryCsvRepo();
@@ -130,8 +143,8 @@ public class CheckoutFacade {
                         System.out.println("Only " + reserved + " " + flowerKey + " left in stock. Adjusted automatically.");
                     }
                 }
-            } else {
             }
+
             CustomersCsvRepo customersRepo = new CustomersCsvRepo();
             int bonusEarned = (int) Math.round(total.getAmount() * 0.05);
             int newBalance = customersRepo.addPoints(
@@ -152,35 +165,37 @@ public class CheckoutFacade {
                     requests.paymentMethod,
                     requests.deliveryType
             );
-
+            System.out.println();
             System.out.println("Saved to system +" + bonusEarned + " bonus, new balance: " + newBalance);
         } catch (IOException e) {
             System.err.println("CSV save failed: " + e.getMessage());
         }
-            Order earningOrder = new Order(
-                    order.date,
-                    order.birthday,
-                    "pickup",
-                    order.items,
-                    order.customerId
-            );
-            Money earned = pricing.total(item, earningOrder);
-            Bonus bonus = new Bonus();
-            bonus.apply(earned, order);
-            System.out.println("Bonus balance: " + Bonus.getBalance(String.valueOf(order.customerId)));
 
-            interfaces.Delivery delivery = switch (requests.deliveryType.toLowerCase()) {
-                case "pickup" -> new PickUp();
-                default -> new Courier();
-            };
-            delivery.deliver(requests.customer.name(), requests.address.street());
+        Order earningOrder = new Order(
+                order.date,
+                order.birthday,
+                "pickup",
+                order.items,
+                order.customerId
+        );
+        Money earned = pricing.total(item, earningOrder);
+        Bonus bonus = new Bonus();
+        bonus.apply(earned, order);
+        System.out.println("Bonus balance: " + Bonus.getBalance(String.valueOf(order.customerId)));
 
-            LocalTime expectedTime = switch (requests.deliveryType.toLowerCase()) {
-                case "express" -> LocalTime.now().plusMinutes(30);
-                case "courier" -> LocalTime.now().plusMinutes(80);
-                case "pickup" -> LocalTime.now().plusMinutes(20);
-                default -> LocalTime.now().plusMinutes(45);
-            };
+        interfaces.Delivery delivery = switch (requests.deliveryType.toLowerCase()) {
+            case "pickup" -> new PickUp();
+            default -> new Courier();
+        };
+        System.out.println();
+        delivery.deliver(requests.customer.name(), requests.address.street());
+
+        LocalTime expectedTime = switch (requests.deliveryType.toLowerCase()) {
+            case "express" -> LocalTime.now().plusMinutes(30);
+            case "courier" -> LocalTime.now().plusMinutes(80);
+            case "pickup" -> LocalTime.now().plusMinutes(20);
+            default -> LocalTime.now().plusMinutes(45);
+        };
 
         String branchName = requests.branchType.name().replace("_", " ");
         DateTimeFormatter fmt = DateTimeFormatter.ofPattern("HH:mm");
@@ -194,10 +209,12 @@ public class CheckoutFacade {
         } else {
             System.out.println("Estimated delivery time: ~" + expectedTime.format(fmt));
         }
+
         if (!requests.composite) {
             sklad.buy(requests.flower, Math.max(1, requests.items));
         }
-            System.out.println("Order registered successfully");
-            return OrderStatus.DELIVERED;
-        }
+
+        System.out.println("Order registered successfully");
+        return OrderStatus.DELIVERED;
     }
+}

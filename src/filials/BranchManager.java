@@ -12,6 +12,7 @@ public class BranchManager {
     public Branch getBranch(BranchType type){
         return branches.get(type);
     }
+
     public void showAllBranches(){
         System.out.println("All branches:");
         for(Branch branch : branches.values()){

@@ -5,7 +5,14 @@ import java.time.MonthDay;
 
 public class BirthdayDiscount implements DiscountStrategy {
     private boolean isBirthday(Order order) {
-        return order != null && order.date != null && order.birthday != null && MonthDay.from(order.date).equals(order.birthday);
+        if (order == null || order.date == null || order.birthday == null) {
+            return false;
+        }
+
+        MonthDay today = MonthDay.from(order.date);
+        MonthDay birth = MonthDay.from(order.birthday);
+
+        return today.equals(birth);
     }
 
     @Override
