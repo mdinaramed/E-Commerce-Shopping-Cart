@@ -19,13 +19,11 @@ public class InventoryCsvRepo {
         if (available == null) {
             return 0;
         }
-
         int reserved = Math.min(available, Math.max(items, 0));
         map.put(key, available - reserved);
         writeQtyMap(path, map);
         return reserved;
     }
-
     private static String norm(String s) {
         return s == null ? "" : s.trim().toLowerCase();
     }

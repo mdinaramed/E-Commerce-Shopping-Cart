@@ -8,13 +8,10 @@ public class BirthdayDiscount implements DiscountStrategy {
         if (order == null || order.date == null || order.birthday == null) {
             return false;
         }
-
         MonthDay today = MonthDay.from(order.date);
         MonthDay birth = MonthDay.from(order.birthday);
-
         return today.equals(birth);
     }
-
     @Override
     public Money apply(Money amount, Order order) {
         if (isBirthday(order))

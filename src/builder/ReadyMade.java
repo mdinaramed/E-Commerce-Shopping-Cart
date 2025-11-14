@@ -47,6 +47,5 @@ public class ReadyMade {
                     .card("For the best mother")
                     .basePrice(34500)
                     .build();
-
     }
 }

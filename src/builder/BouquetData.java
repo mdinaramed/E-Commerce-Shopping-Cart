@@ -16,32 +16,26 @@ public class BouquetData implements Bouquet {
         this.card = card;
         this.basePrice = basePrice;
     }
-
     @Override
     public String flower() {
         return flower;
     }
-
     @Override
     public String color() {
         return color;
     }
-
     @Override
     public String wrap() {
         return wrap;
     }
-
     @Override
     public String card() {
         return card;
     }
-
     @Override
     public Money basePrice() {
         return basePrice;
     }
-
     @Override
     public String toString() {
         return flower + " " + color + ", wrap: " + wrap + ", card: " + card + ", price: " + basePrice;

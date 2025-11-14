@@ -5,7 +5,6 @@ import utilities.Money;
 
 public class BasicBouquet implements PricedItem {
     private final Bouquet bouquet;
-
     public BasicBouquet(Bouquet bouquet) {
         this.bouquet = bouquet;
     }
@@ -13,7 +12,6 @@ public class BasicBouquet implements PricedItem {
     public String title() {
         return bouquet.flower() + " " +bouquet.color() + ", wrap: " +bouquet.wrap() + ", card: " +bouquet.card();
     }
-
     @Override
     public Money price() {
         return bouquet.basePrice();

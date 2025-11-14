@@ -17,7 +17,7 @@ public class SecondMain {
     public static OrderRequests startInteractive(BranchManager branches) {
         Scanner sc = new Scanner(System.in);
 
-        System.out.println("\n ✨Welcome to Ademi Flowers✨");
+        System.out.println("\n✨WELCOME TO ADEMI ✨");
         System.out.println("Please choose branch:");
         int i = 1;
         for (BranchType bt : BranchType.values()) {
@@ -45,7 +45,6 @@ public class SecondMain {
         LocalDate birthday;
 
         Map<String, Integer> comps;
-
         if (choice == 1) {
             comps = new LinkedHashMap<>();
             List<Component> components = new ArrayList<>();
@@ -80,7 +79,7 @@ public class SecondMain {
                 comps.put(base, comps.getOrDefault(base, 0) + qtyPerBouquet);
 
                 double part = f.getPrice().getAmount() * qtyPerBouquet;
-                System.out.println("✅ Added " + qtyPerBouquet + " × " + f.getName() + " (" + col + ") — " + (long) part + " KZT\n");
+                System.out.println("✅ Added " + qtyPerBouquet + " × " + f.getName() + "[" + col + "] — " + (long) part + " KZT\n");
             }
 
             if (components.isEmpty()) {

@@ -12,7 +12,6 @@ public class Csv {
         }
         return path;
     }
-
     public static List<String[]> read(Path path) throws IOException {
         if (Files.notExists(path)) return List.of();
         List<String[]> rows = new ArrayList<>();
@@ -26,7 +25,6 @@ public class Csv {
         }
         return rows;
     }
-
     public static synchronized void append(Path path, String header, String[] row) throws IOException {
         ensureFile(path, header);
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.APPEND)) {
@@ -34,7 +32,6 @@ public class Csv {
             bw.newLine();
         }
     }
-
     public static synchronized void writeAll(Path path, String header, List<String[]> rows) throws IOException {
         ensureFile(path, header);
         try (BufferedWriter bw = Files.newBufferedWriter(path, StandardOpenOption.TRUNCATE_EXISTING)) {
@@ -46,7 +43,6 @@ public class Csv {
             }
         }
     }
-
     public static String now() {
         return LocalDateTime.now().toString();
     }

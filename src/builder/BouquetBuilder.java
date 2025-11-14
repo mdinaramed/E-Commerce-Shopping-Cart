@@ -18,7 +18,6 @@ public class BouquetBuilder{
         this.basePrice = f.getPrice();
         return this;
     }
-
     public BouquetBuilder flower(String flower){
         this.flower = flower;
         return this;

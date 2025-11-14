@@ -1,30 +1,24 @@
 package facade;
-import bonus.Bonus;
+
 import utilities.Money;
 import filials.*;
 import interfaces.*;
 import decorator.*;
-import interfaces.Payment;
 import strategy.*;
 import adapter.*;
 import observer.Sklad;
 import strategy.Delivery;
 import csv.*;
-import java.io.IOException;
 import builder.OrderBuilder;
-
-import java.time.MonthDay;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.time.LocalTime;
 
 public class CheckoutFacade {
     private final BranchManager branches;
-
     public CheckoutFacade(BranchManager branches) {
         this.branches = branches;
     }
-
     public OrderStatus placeOrder(OrderRequests requests) {
         Branch branch = branches.getBranch(requests.branchType);
         Sklad sklad = branch.getSklad();
@@ -53,7 +47,6 @@ public class CheckoutFacade {
                 case "tulips" -> new factory.Tulips();
                 default -> throw new IllegalArgumentException("Invalid flower type: " + requests.flower);
             };
-
             bouquet = new builder.BouquetBuilder()
                     .fromFactory(flowerFactory, requests.color)
                     .wrap(requests.wrap)
@@ -81,7 +74,6 @@ public class CheckoutFacade {
         if (deliveryFee > 0) {
             System.out.println((" + Delivery (" + requests.deliveryType + ") +" + deliveryFee + " KZT"));
         }
-
         System.out.println("_________________________________");
         System.out.println("Subtotal: " + requests.basePrice + " KZT");
 
@@ -99,19 +91,9 @@ public class CheckoutFacade {
                         new BulkDiscount(),
                         new WomenDayDiscount()),
                 new Delivery());
+
         Money total = pricing.total(item, order);
-
-        boolean isBirthday = false;
-
-        if (order.date != null && order.birthday != null) {
-            isBirthday = MonthDay.from(order.date).equals(MonthDay.from(order.birthday));
-        }
-
-        if (isBirthday) {
-            System.out.println("Total: " + total + " KZT (congratulating you with HB and we have discount -10% for you without adding delivery price)");
-        } else {
-            System.out.println("Total: " + total);
-        }
+        System.out.println("Total price: " + total + " KZT");
 
         Payment payment = switch (requests.paymentMethod.toLowerCase()) {
             case "kaspi" -> new Kaspi();
@@ -123,7 +105,6 @@ public class CheckoutFacade {
                 yield new Kaspi();
             }
         };
-
         boolean paid = payment.pay(requests.customer.name(), total);
         if (!paid) {
             System.out.println("Payment failed");
@@ -131,57 +112,7 @@ public class CheckoutFacade {
         }
         System.out.println("Payment successful");
 
-        try {
-            InventoryCsvRepo inventoryRepo = new InventoryCsvRepo();
-
-            if (requests.composite && requests.components != null && !requests.components.isEmpty()) {
-                for (var e : requests.components.entrySet()) {
-                    String flowerKey = e.getKey().toLowerCase();
-                    int qty = e.getValue();
-                    int reserved = inventoryRepo.tryReserve(requests.branchType, flowerKey, qty);
-                    if (reserved < qty) {
-                        System.out.println("Only " + reserved + " " + flowerKey + " left in stock. Adjusted automatically.");
-                    }
-                }
-            }
-
-            CustomersCsvRepo customersRepo = new CustomersCsvRepo();
-            int bonusEarned = (int) Math.round(total.getAmount() * 0.05);
-            int newBalance = customersRepo.addPoints(
-                    requests.customer.phone(),
-                    requests.customer.name(),
-                    bonusEarned
-            );
-
-            OrdersCsvRepo ordersRepo = new OrdersCsvRepo();
-            ordersRepo.append(
-                    requests.branchType.name(),
-                    requests.customer.name(),
-                    requests.customer.phone(),
-                    requests.flower,
-                    requests.items,
-                    total.getAmount(),
-                    bonusEarned,
-                    requests.paymentMethod,
-                    requests.deliveryType
-            );
-            System.out.println();
-            System.out.println("Saved to system +" + bonusEarned + " bonus, new balance: " + newBalance);
-        } catch (IOException e) {
-            System.err.println("CSV save failed: " + e.getMessage());
-        }
-
-        Order earningOrder = new Order(
-                order.date,
-                order.birthday,
-                "pickup",
-                order.items,
-                order.customerId
-        );
-        Money earned = pricing.total(item, earningOrder);
-        Bonus bonus = new Bonus();
-        bonus.apply(earned, order);
-        System.out.println("Bonus balance: " + Bonus.getBalance(String.valueOf(order.customerId)));
+        new CsvOrderService().saveOrderData(requests, total);
 
         interfaces.Delivery delivery = switch (requests.deliveryType.toLowerCase()) {
             case "pickup" -> new PickUp();

@@ -1,7 +1,6 @@
 package builder;
 
 import strategy.Order;
-
 import java.time.LocalDate;
 
 public class OrderBuilder {

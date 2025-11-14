@@ -15,20 +15,16 @@ public class Bonus implements DiscountStrategy {
         }
 
         String customerId = String.valueOf(order.customerId);
-
         BonusCard card = cards.get(customerId);
         if (card == null) {
             card = new BonusCard(customerId);
             cards.put(customerId, card);
         }
-
         Money earned = amount.multiply(0.05);
         card.add(earned);
-
         System.out.println("Added bonuses: " + earned);
         return amount;
     }
-
     public static double getBalance(String customerId) {
         BonusCard card = cards.get(customerId);
         if (card != null)
